@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: cattle-system
 ---
 # Source: rancher/templates/serviceAccount.yaml
 kind: ServiceAccount

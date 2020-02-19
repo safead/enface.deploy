@@ -1,0 +1,103 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: demonoid81/enface-api-server:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DEBUG
+              value: "1"
+            - name: KUBE
+              value: "1"
+            - name: PORT
+              value: "80"
+            - name: HOST
+              value: "0.0.0.0"
+            - name: CASSANDRA_POINTS
+              value: "172.16.0.1 172.16.0.2 172.16.0.3"
+            - name: CASSANDRA_PORT
+              value: "9042"
+            - name: CASSANDRA_USER
+              value: "admin"
+            - name: CASSANDRA_PASSWORD
+              value: "123456789"
+            - name: KEYSPACE
+              value: "enface"
+            - name: AMQP_QUEUE_ADDRESS
+              value: "amqp://user:kwK6jQnqAH@rabbitmq:5672"
+            - name: SECRET
+              value: "VRdrfUHuHLgkHLJijJihuoy5ghbH6t8hjNBMHHDFDvtjhjhgi767"
+            - name: BIO_AUTH_SECRET
+              value: "D7ItfXwb9TghT6avzmRva+hbZnZrrXhNsnBzPshtcAg="
+            - name: AUTH_PRODUCT_ID
+              value: "5d3a8ee0-68b9-4a6d-9d27-2990632dbe9b"
+            - name: AUTH_CALLBACK_URL
+              value: "https://enface-api-server.herokuapp.com"
+            - name: PPS_URL1
+              value: "http://pps_url:5555/photo"
+            - name: RACE_URL1
+              value: "http://race_url:4000/photo"
+            - name: AGE_URL1
+              value: "http://age_url:4000/photo"
+            - name: SEX_URL1
+              value: "http://sex_url:4000/photo"
+            - name: MOOD_URL1
+              value: "http://mood_url:4000/photo"
+            - name: LIVENESS_URL1
+              value: "http://liveness_url:5555/photo"
+            - name: EMBEDDING_URL1
+              value: "http://embedding_url:5555/photo"
+            - name: ETH_WALLET_MNEMONIC
+              value: "domain opinion dream team thunder shove pet fatigue local scrub satisfy scissors"
+            - name: ROOT_WALLET_MNEMONIC
+              value: "session key diesel room great ceiling riot skull possible swim cash normal"
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  selector:
+    app: api
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: api-iu
+spec:
+  rules:
+  - host: api-dev.enface.io
+    http:
+      paths:
+      - backend:
+          serviceName: api
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - api-dev.enface.io
+    secretName: enface-tls-cert
+
